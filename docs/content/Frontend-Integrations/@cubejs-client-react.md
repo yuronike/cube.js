@@ -10,7 +10,7 @@ menuOrder: 3
 
 ## useCubeQuery
 
->  **useCubeQuery**‹**TData**›(**query**: Query | Query[], **options?**: [UseCubeQueryOptions](#use-cube-query-options)): *[UseCubeQueryResult](#use-cube-query-result)‹TData›*
+>  **useCubeQuery**‹**TData**›(**query**: Query | Query[], **options?**: [UseCubeQueryOptions](#use-cube-query-use-cube-query-options)): *[UseCubeQueryResult](#use-cube-query-use-cube-query-result)‹TData›*
 
 A React hook for executing Cube.js queries
 ```js
@@ -48,7 +48,7 @@ export default function App() {
 
 - **TData**
 
-### <--{"id" : "useCubeQuery"}--> UseCubeQueryOptions
+### UseCubeQueryOptions
 
 Name | Type | Description |
 ------ | ------ | ------ |
@@ -57,13 +57,14 @@ resetResultSetOnChange? | boolean | When `true` the resultSet will be reset to `
 skip? | boolean | Query execution will be skipped when `skip` is set to `true`. You can use this flag to avoid sending incomplete queries. |
 subscribe? | boolean | Use continuous fetch behavior. See [Real-Time Data Fetch](real-time-data-fetch) |
 
-### <--{"id" : "useCubeQuery"}--> UseCubeQueryResult
+### UseCubeQueryResult
 
 Name | Type |
 ------ | ------ |
 error | Error &#124; null |
 isLoading | boolean |
 progress | ProgressResponse |
+refetch |  () => *Promise‹void›* |
 resultSet | ResultSet‹TData› &#124; null |
 
 ## isQueryPresent
@@ -72,9 +73,13 @@ resultSet | ResultSet‹TData› &#124; null |
 
 Checks whether the query is ready
 
+## useCubeMeta
+
+>  **useCubeMeta**(**options?**: Omit‹CubeFetchOptions, "query"›): *CubeFetchResult‹Meta›*
+
 ## QueryBuilder
 
-> **QueryBuilder** extends **React.Component** ‹[QueryBuilderProps](#query-builder-props), [QueryBuilderState](#query-builder-state)›:
+> **QueryBuilder** extends **React.Component** ‹[QueryBuilderProps](#query-builder-query-builder-props), [QueryBuilderState](#query-builder-query-builder-state)›:
 
 `<QueryBuilder />` is used to build interactive analytics query builders. It abstracts state management and API calls to Cube.js Backend. It uses render prop technique and doesn’t render anything itself, but calls the render function instead.
 
@@ -136,72 +141,90 @@ const rootElement = document.getElementById("root");
 ReactDOM.render(<App />, rootElement);
 ```
 
-### <--{"id" : "QueryBuilder"}--> QueryBuilderProps
+### QueryBuilderProps
 
 Name | Type | Description |
 ------ | ------ | ------ |
-cubejsApi | CubejsApi | `CubejsApi` instance to use |
+cubejsApi? | CubejsApi | `CubejsApi` instance to use |
 defaultChartType? | [ChartType](#types-chart-type) | - |
+defaultQuery? | Query | Default query (used when initialVizState is not set or does not contain query) |
 disableHeuristics? | boolean | Defaults to `false`. This means that the default heuristics will be applied. For example: when the query is empty and you select a measure that has a default time dimension it will be pushed to the query. |
-query? | Query | Default query |
-render |  (**renderProps**: [QueryBuilderRenderProps](#query-builder-render-props)) => *React.ReactNode* | - |
-setQuery? |  (**query**: Query) => *void* | Called by the `QueryBuilder` when the query state has changed. Use it when state is maintained outside of the `QueryBuilder` component. |
-setVizState? |  (**vizState**: [VizState](#types-viz-state)) => *void* | - |
-stateChangeHeuristics? |  (**state**: [QueryBuilderState](#query-builder-state)) => *[QueryBuilderState](#query-builder-state)* | A function that accepts the `newState` just before it's applied. You can use it to override the **defaultHeuristics** or to tweak the query or the vizState in any way. |
-vizState? | [VizState](#types-viz-state) | - |
-wrapWithQueryRenderer? | boolean | Defaults to `true`. Use QueryRenderer to render. Set this to `false` to use your own QueryRenderer. |
+initialVizState? | [VizState](#types-viz-state) | State for the QueryBuilder to start with. Pass in the value previously saved from onVizStateChanged to restore a session. |
+onVizStateChanged? |  (**vizState**: [VizState](#types-viz-state)) => *void* | Called by the `QueryBuilder` when the viz state has changed. Use it to save state outside of the `QueryBuilder` component. |
+render |  (**renderProps**: [QueryBuilderRenderProps](#query-builder-query-builder-render-props)) => *React.ReactNode* | - |
+stateChangeHeuristics? |  (**state**: [QueryBuilderState](#query-builder-query-builder-state), **newState**: [QueryBuilderState](#query-builder-query-builder-state)) => *[QueryBuilderState](#query-builder-query-builder-state)* | A function that accepts the `newState` just before it's applied. You can use it to override the **defaultHeuristics** or to tweak the query or the vizState in any way. |
+wrapWithQueryRenderer? | boolean | - |
 
-### <--{"id" : "QueryBuilder"}--> QueryBuilderRenderProps
+### QueryBuilderRenderProps
 
 Name | Type | Description |
 ------ | ------ | ------ |
 availableDimensions | TCubeDimension[] | An array of available dimensions to select. They are loaded via the API from Cube.js Backend. |
+availableFilterMembers | Array‹[AvailableCube](#types-available-cube)‹TCubeMeasure› &#124; [AvailableCube](#types-available-cube)‹TCubeDimension›› | - |
 availableMeasures | TCubeMeasure[] | An array of available measures to select. They are loaded via the API from Cube.js Backend. |
-availableSegments | TCubeMember[] | An array of available segments to select. They are loaded via the API from Cube.js Backend. |
+availableMembers | [AvailableMembers](#types-available-members) | - |
+availableSegments | TCubeSegment[] | An array of available segments to select. They are loaded via the API from Cube.js Backend. |
 availableTimeDimensions | TCubeDimension[] | An array of available time dimensions to select. They are loaded via the API from Cube.js Backend. |
-dimensions | string[] | - |
+chartType? | [ChartType](#types-chart-type) | Selected chart type |
+dimensions | object & object & object[] | - |
+dryRunResponse? | DryRunResponse | - |
 error? | Error &#124; null | - |
+filters | object & object & object[] | - |
+isFetchingMeta | boolean | - |
 isQueryPresent | boolean | Indicates whether the query is ready to be displayed or not |
 loadingState? | [TLoadingState](#types-t-loading-state) | - |
-measures | string[] | - |
+measures | object & object & object[] | - |
+meta | Meta &#124; undefined | - |
+metaError? | Error &#124; null | - |
+missingMembers | string[] | - |
+orderMembers | TOrderMember[] | All possible order members for the query |
+pivotConfig? | PivotConfig | See [Pivot Config](@cubejs-client-core#types-pivot-config) |
+query | Query | - |
+refresh |  () => *void* | - |
 resultSet? | ResultSet &#124; null | - |
-segments | string[] | - |
-timeDimensions | Filter[] | - |
-updateDimensions | [MemberUpdater](#types-member-updater) | - |
-updateMeasures | [MemberUpdater](#types-member-updater) | - |
+segments | object & object[] | - |
+timeDimensions | object & object & object[] | - |
+updateChartType |  (**chartType**: [ChartType](#types-chart-type)) => *void* | Used for chart type update |
+updateDimensions | [DimensionUpdater](#types-dimension-updater) | - |
+updateFilters | [FilterUpdater](#types-filter-updater) | - |
+updateMeasures | [MeasureUpdater](#types-measure-updater) | - |
+updateOrder | [OrderUpdater](#types-order-updater) | Used for query order update |
+updatePivotConfig | [PivotConfigUpdater](#types-pivot-config-updater) | Helper method for `pivotConfig` updates |
 updateQuery |  (**query**: Query) => *void* | Used for partial of full query update |
-updateSegments | [MemberUpdater](#types-member-updater) | - |
-updateTimeDimensions | [MemberUpdater](#types-member-updater) | - |
+updateSegments | [SegmentUpdater](#types-segment-updater) | - |
+updateTimeDimensions | [TimeDimensionUpdater](#types-time-dimension-updater) | - |
+validatedQuery | Query | - |
 
-### <--{"id" : "QueryBuilder"}--> QueryBuilderState
+### QueryBuilderState
 
 > **QueryBuilderState**: *[VizState](#types-viz-state) & object*
 
 ## QueryRenderer
 
-> **QueryRenderer** extends **React.Component** ‹[QueryRendererProps](#query-renderer-props)›:
+> **QueryRenderer** extends **React.Component** ‹[QueryRendererProps](#query-renderer-query-renderer-props)›:
 
 `<QueryRenderer />` a react component that accepts a query, fetches the given query, and uses the render prop to render the resulting data
 
-### <--{"id" : "QueryRenderer"}--> QueryRendererProps
+### QueryRendererProps
 
 Name | Type | Description |
 ------ | ------ | ------ |
-cubejsApi | CubejsApi | `CubejsApi` instance to use |
-loadSql? | "only" &#124; boolean | Indicates whether the generated by `Cube.js` SQL Code should be requested. See [rest-api#sql](rest-api#v-1-sql). When set to `only` then only the request to [/v1/sql](rest-api#v-1-sql) will be performed. When set to `true` the sql request will be performed along with the query request. Will not be performed if set to `false` |
+cubejsApi? | CubejsApi | `CubejsApi` instance to use |
+loadSql? | "only" &#124; boolean | Indicates whether the generated by `Cube.js` SQL Code should be requested. See [rest-api#sql](rest-api#api-reference-v-1-sql). When set to `only` then only the request to [/v1/sql](rest-api#api-reference-v-1-sql) will be performed. When set to `true` the sql request will be performed along with the query request. Will not be performed if set to `false` |
 queries? | object | - |
-query | Query | Analytic query. [Learn more about it's format](query-format) |
-render |  (**renderProps**: [QueryRendererRenderProps](#query-renderer-render-props)) => *void* | Output of this function will be rendered by the `QueryRenderer` |
+query | Query &#124; Query[] | Analytic query. [Learn more about it's format](query-format) |
+render |  (**renderProps**: [QueryRendererRenderProps](#query-renderer-query-renderer-render-props)) => *void* | Output of this function will be rendered by the `QueryRenderer` |
 resetResultSetOnChange? | boolean | When `true` the **resultSet** will be reset to `null` first on every state change |
 updateOnlyOnStateChange? | boolean | - |
 
-### <--{"id" : "QueryRenderer"}--> QueryRendererRenderProps
+### QueryRendererRenderProps
 
 Name | Type |
 ------ | ------ |
 error | Error &#124; null |
 loadingState | [TLoadingState](#types-t-loading-state) |
 resultSet | ResultSet &#124; null |
+sqlQuery | SqlQuery &#124; null |
 
 ## CubeProvider
 
@@ -265,24 +288,79 @@ export default function DisplayComponent() {
 
 ## Types
 
-### <--{"id" : "Types"}--> ChartType
+### AvailableCube
 
-> **ChartType**: *"line" | "bar" | "table" | "area"*
+Name | Type |
+------ | ------ |
+cubeName | string |
+cubeTitle | string |
+members | T[] |
 
-### <--{"id" : "Types"}--> CubeContextProps
+### AvailableMembers
+
+Name | Type |
+------ | ------ |
+dimensions | [AvailableCube](#types-available-cube)‹TCubeDimension›[] |
+measures | [AvailableCube](#types-available-cube)‹TCubeMeasure›[] |
+segments | [AvailableCube](#types-available-cube)‹TCubeSegment›[] |
+timeDimensions | [AvailableCube](#types-available-cube)‹TCubeDimension›[] |
+
+### ChartType
+
+> **ChartType**: *"line" | "bar" | "table" | "area" | "number" | "pie"*
+
+### CubeContextProps
 
 Name | Type |
 ------ | ------ |
 cubejsApi | CubejsApi |
 
-### <--{"id" : "Types"}--> CubeProviderProps
+### CubeProviderProps
 
 Name | Type |
 ------ | ------ |
 children | React.ReactNode |
-cubejsApi | CubejsApi |
+cubejsApi | CubejsApi &#124; null |
 
-### <--{"id" : "Types"}--> MemberUpdater
+### DimensionUpdater
+
+> **DimensionUpdater**: *[MemberUpdater](#types-member-updater)‹TCubeDimension›*
+
+### FilterExtraFields
+
+Name | Type |
+------ | ------ |
+dimension | TCubeDimension &#124; TCubeMeasure |
+operators | object[] |
+
+### FilterUpdateFields
+
+Name | Type |
+------ | ------ |
+dimension | TCubeDimension &#124; TCubeMeasure |
+member? | string |
+operator | BinaryOperator &#124; UnaryOperator |
+values? | string[] |
+
+### FilterUpdater
+
+> **FilterUpdater**: *[MemberUpdater](#types-member-updater)‹[FilterUpdateFields](#types-filter-update-fields)›*
+
+### FilterWithExtraFields
+
+> **FilterWithExtraFields**: *Omit‹Filter, "dimension"› & [FilterExtraFields](#types-filter-extra-fields)*
+
+### GranularityOptions
+
+Name | Type |
+------ | ------ |
+granularities | object[] |
+
+### MeasureUpdater
+
+> **MeasureUpdater**: *[MemberUpdater](#types-member-updater)‹TCubeMeasure›*
+
+### MemberUpdater
 
 You can use the following methods for member manipulaltion
 ```js
@@ -313,7 +391,7 @@ You can use the following methods for member manipulaltion
 />
 ```
 
-NOTE: if you need to add or remove more than one member at a time you should use `updateQuery` prop of [QueryBuilderRenderProps](#query-builder-render-props)
+NOTE: if you need to add or remove more than one member at a time you should use `updateQuery` prop of [QueryBuilderRenderProps](#query-builder-query-builder-render-props)
 ```js
 <QueryBuilder
   // ...
@@ -354,20 +432,84 @@ NOTE: if you need to add or remove more than one member at a time you should use
 
 Name | Type |
 ------ | ------ |
-add |  (**member**: MemberType) => *void* |
-remove |  (**member**: MemberType) => *void* |
-update |  (**member**: MemberType, **updateWith**: MemberType) => *void* |
+add |  (**member**: T) => *void* |
+remove |  (**member**: object) => *void* |
+update |  (**member**: object, **updateWith**: T) => *void* |
 
-### <--{"id" : "Types"}--> TLoadingState
+### OrderUpdater
+
+Name | Type |
+------ | ------ |
+reorder |  (**sourceIndex**: number, **destinationIndex**: number) => *void* |
+set |  (**memberId**: string, **order**: QueryOrder &#124; "none") => *void* |
+update |  (**order**: Query["order"]) => *void* |
+
+### PivotConfigExtraUpdateFields
+
+Name | Type |
+------ | ------ |
+limit? | number |
+
+### PivotConfigUpdater
+
+Name | Type |
+------ | ------ |
+moveItem |  (**args**: [PivotConfigUpdaterArgs](#types-pivot-config-updater-args)) => *void* |
+update |  (**pivotConfig**: PivotConfig & [PivotConfigExtraUpdateFields](#types-pivot-config-extra-update-fields)) => *void* |
+
+### PivotConfigUpdaterArgs
+
+Name | Type |
+------ | ------ |
+destinationAxis | TSourceAxis |
+destinationIndex | number |
+sourceAxis | TSourceAxis |
+sourceIndex | number |
+
+### SegmentUpdater
+
+> **SegmentUpdater**: *[MemberUpdater](#types-member-updater)‹TCubeSegment›*
+
+### TLoadingState
 
 Name | Type |
 ------ | ------ |
 isLoading | boolean |
 
-### <--{"id" : "Types"}--> VizState
+### TimeDimensionComparisonUpdateFields
+
+Name | Type |
+------ | ------ |
+compareDateRange | Array‹DateRange› |
+dimension | TCubeDimension |
+granularity? | TimeDimensionGranularity |
+
+### TimeDimensionExtraFields
+
+Name | Type |
+------ | ------ |
+dimension | TCubeDimension & [GranularityOptions](#types-granularity-options) |
+
+### TimeDimensionRangedUpdateFields
+
+Name | Type |
+------ | ------ |
+dateRange? | DateRange |
+dimension | TCubeDimension |
+granularity? | TimeDimensionGranularity |
+
+### TimeDimensionUpdater
+
+> **TimeDimensionUpdater**: *[MemberUpdater](#types-member-updater)‹[TimeDimensionRangedUpdateFields](#types-time-dimension-ranged-update-fields) | [TimeDimensionComparisonUpdateFields](#types-time-dimension-comparison-update-fields)›*
+
+### TimeDimensionWithExtraFields
+
+> **TimeDimensionWithExtraFields**: *Omit‹TimeDimension, "dimension"› & [TimeDimensionExtraFields](#types-time-dimension-extra-fields)*
+
+### VizState
 
 Name | Type |
 ------ | ------ |
 chartType? | [ChartType](#types-chart-type) |
 pivotConfig? | PivotConfig |
-shouldApplyHeuristicOrder? | boolean |
+query? | Query |
