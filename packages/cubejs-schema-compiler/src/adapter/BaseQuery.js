@@ -629,10 +629,20 @@ export class BaseQuery {
       )(multipliedMeasures.concat(regularMeasures).concat(cumulativeMeasures.map(([multiplied, measure]) => measure))),
     };
 
-    const join = R.drop(1, toJoin)
+      //ORIGNINAL implementation
+      /*
+      const join = R.drop(1, toJoin)
       .map(
         (q, i) => (this.dimensionAliasNames().length ?
           `INNER JOIN (${q}) as q_${i + 1} ON ${this.dimensionsJoinCondition(`q_${i}`, `q_${i + 1}`)}` :
+          `, (${q}) as q_${i + 1}`),
+      ).join('\n');*/
+
+      //CUSTOM implementation
+      const join = R.drop(1, toJoin)
+      .map(
+        (q, i) => (this.dimensionAliasNames().length ?
+          `FULL OUTER JOIN (${q}) as q_${i + 1} ON ${this.dimensionsJoinCondition(`q_${i}`, `q_${i + 1}`)}` :
           `, (${q}) as q_${i + 1}`),
       ).join('\n');
 
