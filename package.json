@@ -25,9 +25,6 @@
     "clean": "rimraf packages/*/{tsconfig.tsbuildinfo,lib,dist}",
     "postinstall": "lerna link && patch-package"
   },
-  "config": {
-    "unsafe-perm": true
-  },
   "author": "Cube Dev, Inc.",
   "dependencies": {
     "@babel/runtime-corejs2": "^7.0.0",
